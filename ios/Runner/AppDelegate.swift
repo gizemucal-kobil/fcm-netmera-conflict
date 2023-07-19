@@ -45,7 +45,31 @@ func registerPlugins(registry: FlutterPluginRegistry) {
         FNetmeraService.handleWork(ON_PUSH_RECEIVE, dict:["userInfo" : userInfo])
     }
 
+    /// official netmera setup https://developer.netmera.com/en/flutter/quick-start
+    /// it conflicts with local notifications plugin and causes duplicated foreground message.
+    /*
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler:
+        @escaping () -> Void) {
 
+        if response.actionIdentifier == UNNotificationDismissActionIdentifier {
+            FNetmeraService.handleWork(ON_PUSH_DISMISS,dict:["userInfo" : response.notification.request.content.userInfo])
+        }
+        else if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+            FNetmeraService.handleWork(ON_PUSH_OPEN, dict:["userInfo" : response.notification.request.content.userInfo])
+        }
+        completionHandler()
+    }
+
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([UNNotificationPresentationOptions.alert])
+    }
+    */
+
+    // recommended by netmera support team as a solution to local notifications duplicated foreground issue
     @available(iOS 10.0, *)
     override func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
