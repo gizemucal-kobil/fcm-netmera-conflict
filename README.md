@@ -19,3 +19,17 @@
 .
 .
 ```
+
+
+Sample push payload:
+```json
+{
+    "to": "c9c5td...",
+    "content_available": true,
+    "priority": "high",
+    "notification": {
+        "title": "Hello there2",
+        "body": "Hello from notification"
+    }
+}
+```
