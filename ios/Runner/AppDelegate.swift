@@ -29,10 +29,12 @@ func registerPlugins(registry: FlutterPluginRegistry) {
 
         let netmeraApiKey = ""
 
-        NetmeraFlutterSdkPlugin.setPluginRegistrantCallback(registerPlugins)
-        FNetmera.logging(true)
-        FNetmera.initNetmera(netmeraApiKey)
-        FNetmera.setPushDelegate(self)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { 
+            NetmeraFlutterSdkPlugin.setPluginRegistrantCallback(registerPlugins)
+            FNetmera.logging(true)
+            FNetmera.initNetmera(netmeraApiKey)
+            FNetmera.setPushDelegate(self)
+        })
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -46,24 +48,21 @@ func registerPlugins(registry: FlutterPluginRegistry) {
     }
 
     @available(iOS 10.0, *)
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
+    override func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler:
         @escaping () -> Void) {
-
-        if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            FNetmeraService.handleWork(ON_PUSH_DISMISS,dict:["userInfo" : response.notification.request.content.userInfo])
+        if response.notification.request.content.userInfo.keys.contains("_nm") {
+            if response.actionIdentifier == UNNotificationDismissActionIdentifier {
+                    FNetmeraService.handleWork(ON_PUSH_DISMISS,dict:["userInfo" : response.notification.request.content.userInfo])
+            }
+            else if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+                    FNetmeraService.handleWork(ON_PUSH_OPEN, dict:["userInfo" : response.notification.request.content.userInfo])
+            }
+            completionHandler()
+        } else {
+            super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
         }
-        else if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            FNetmeraService.handleWork(ON_PUSH_OPEN, dict:["userInfo" : response.notification.request.content.userInfo])
-        }
-        completionHandler()
     }
-
-    @available(iOS 10.0, *)
-    override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([UNNotificationPresentationOptions.alert])
-    }
-
 }
 
