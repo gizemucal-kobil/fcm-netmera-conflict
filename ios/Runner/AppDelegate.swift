@@ -2,12 +2,6 @@ import UIKit
 import Flutter
 import netmera_flutter_sdk
 
-//This function is needed for sending messages to the dart side. (Setting the callback function)
-func registerPlugins(registry: FlutterPluginRegistry) {
-    NetmeraFlutterSdkPlugin.register(
-    with: registry.registrar(forPlugin: "netmera_flutter_sdk")!)
-}
-
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, NetmeraPushDelegate {
 
@@ -30,7 +24,6 @@ func registerPlugins(registry: FlutterPluginRegistry) {
         let netmeraApiKey = ""
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { 
-            NetmeraFlutterSdkPlugin.setPluginRegistrantCallback(registerPlugins)
             FNetmera.logging(true)
             FNetmera.initNetmera(netmeraApiKey)
             FNetmera.setPushDelegate(self)
@@ -44,7 +37,11 @@ func registerPlugins(registry: FlutterPluginRegistry) {
     }
 
     override func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
-        FNetmeraService.handleWork(ON_PUSH_RECEIVE, dict:["userInfo" : userInfo])
+        if UIApplication.shared.applicationState == .active {
+            FNetmeraService.handleWork(ON_PUSH_RECEIVE, dict:["userInfo" : userInfo])
+        } else {
+            FNetmeraService.handleWork(ON_PUSH_RECEIVE_BACKGROUND, dict:["userInfo" : userInfo])
+        }
     }
 
     @available(iOS 10.0, *)
@@ -65,4 +62,3 @@ func registerPlugins(registry: FlutterPluginRegistry) {
         }
     }
 }
-
